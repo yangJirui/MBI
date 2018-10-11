@@ -1,11 +1,12 @@
+# -*- coding:utf-8 -*-
 import gdal
 import numpy as np
 import skimage.morphology as MM
 import matplotlib.pyplot as plt
 
-from codes.utils import get_liner_se
+from utils import get_liner_se
 
-def read_tif(path, H, W, band_list=[2, 3, 5]):
+def read_tif(path, H, W, band_list=[4, 2, 1]):
     '''
     band list is [1~8]. Among them, [2, 3, 5] is [B, G, R]
     raw_img [0, 1, 2, 3, 4, 5, 6, 7, 8]
@@ -69,23 +70,27 @@ def get_mbi(img):
     total_dmp = np.zeros_like(img, dtype=np.float64)
 
     for d in directions:
-        old_white_hat = white_hat_reconstruction(img, se=get_liner_se(d, scale=57))
+        now_se = get_liner_se(d, scale=57)
+        print (now_se)
+        old_white_hat = white_hat_reconstruction(img, se=now_se)
         tmp_dmp = np.zeros_like(img, dtype=np.float64)
 
         for s in sizes:
+            if s % 2==0:
+                s +=1
             now_white_hat = white_hat_reconstruction(img, se=get_liner_se(d, scale=s))
             tmp_dmp += np.abs(old_white_hat - now_white_hat)
             old_white_hat = now_white_hat
         total_dmp += tmp_dmp
     mbi = total_dmp/(4*11.)
 
-    viewed_mbi = mbi*255.0/np.max(mbi)
+    viewed_mbi = np.asarray(mbi*255.0/np.max(mbi), dtype=np.uint8)
     return mbi, viewed_mbi
 
 
 def vis_some_results():
 
-    raw_img, viewed_rgb = read_tif('C:\python\python工程\MBI\data\Four_Vegas_img96.tif',
+    raw_img, viewed_rgb = read_tif('../data/Four_Vegas_img96.tif',
                                    650, 650)
 
     bright_img, viewed_brightImg = get_brightness(raw_img, selected_bands=[0, 1, 2, 3, 4])
@@ -95,10 +100,11 @@ def vis_some_results():
     plt.subplot(131)
     plt.imshow(viewed_rgb)
     plt.subplot(132)
-    plt.imshow(viewed_brightImg)
+    plt.imshow(viewed_brightImg, 'gray')
 
     plt.subplot(133)
-    plt.imshow(viewed_mbi)
+    plt.imshow(viewed_mbi, 'gray')
+    plt.show()
 
 if __name__ == '__main__':
     print(222)

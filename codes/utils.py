@@ -5,7 +5,7 @@ def get_liner_se(theta, scale):
 
     rect = np.zeros((scale, scale), dtype=np.float32)
     if theta == 0:
-        rect = np.ones((1, scale), dtype=np.float32)
+        rect = np.ones((1,scale), dtype=np.float32)
     elif theta == 90:
         rect = np.ones((scale, 1), dtype=np.float32)
     elif theta == 45:
