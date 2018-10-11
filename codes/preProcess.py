@@ -61,6 +61,19 @@ def white_hat_reconstruction(img, se):
 
     return white_hat
 
+def black_hat_reconstruction(img, se):
+    # 1. closing by reconstruction
+    dilation_img = MM.dilation(img, selem=se)
+
+    seed = dilation_img
+    mask = img
+
+    closing_by_reconstruction = MM.reconstruction(seed=seed, mask=mask, method="erosion", selem=se)
+
+    # 2. black hat reconstruction
+    black_hat = closing_by_reconstruction - img
+
+    return black_hat
 
 def get_mbi(img):
 
@@ -87,6 +100,30 @@ def get_mbi(img):
     viewed_mbi = np.asarray(mbi*255.0/np.max(mbi), dtype=np.uint8)
     return mbi, viewed_mbi
 
+def get_msi(img):
+
+    directions = [0, 45, 90, 135]
+    sizes = range(52, 2-5, -5)
+
+    total_dmp = np.zeros_like(img, dtype=np.float64)
+
+    for d in directions:
+        now_se = get_liner_se(d, scale=57)
+        print (now_se)
+        old_black_hat = black_hat_reconstruction(img, se=now_se)
+        tmp_dmp = np.zeros_like(img, dtype=np.float64)
+
+        for s in sizes:
+            if s % 2==0:
+                s +=1
+            now_black_hat = black_hat_reconstruction(img, se=get_liner_se(d, scale=s))
+            tmp_dmp += np.abs(old_black_hat - now_black_hat)
+            old_black_hat = now_black_hat
+        total_dmp += tmp_dmp
+    msi = total_dmp/(4*11.)
+
+    viewed_msi = np.asarray(msi*255.0/np.max(msi), dtype=np.uint8)
+    return msi, viewed_msi
 
 def vis_some_results():
 
@@ -96,15 +133,19 @@ def vis_some_results():
     bright_img, viewed_brightImg = get_brightness(raw_img, selected_bands=[0, 1, 2, 3, 4])
 
     mbi, viewed_mbi = get_mbi(bright_img)
-
-    plt.subplot(131)
+    msi, viewed_msi = get_msi(bright_img)
+    plt.subplot(141)
     plt.imshow(viewed_rgb)
-    plt.subplot(132)
+    plt.subplot(142)
     plt.imshow(viewed_brightImg, 'gray')
 
-    plt.subplot(133)
+    plt.subplot(143)
     plt.imshow(viewed_mbi, 'gray')
+
+    plt.subplot(144)
+    plt.imshow(viewed_msi, 'gray')
     plt.show()
+
 
 if __name__ == '__main__':
     print(222)
