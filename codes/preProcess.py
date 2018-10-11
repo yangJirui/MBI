@@ -2,7 +2,7 @@
 import gdal
 import numpy as np
 import skimage.morphology as MM
-import matplotlib.pyplot as plt
+# import matplotlib.pyplot as plt
 
 from utils import get_liner_se
 
@@ -138,17 +138,18 @@ def vis_some_results():
 
     mbi, viewed_mbi = get_mbi(bright_img)
     msi, viewed_msi = get_msi(bright_img)
-    plt.subplot(141)
-    plt.imshow(viewed_rgb)
-    plt.subplot(142)
-    plt.imshow(viewed_brightImg, 'gray')
-
-    plt.subplot(143)
-    plt.imshow(viewed_mbi, 'gray')
-
-    plt.subplot(144)
-    plt.imshow(viewed_msi, 'gray')
-    plt.show()
+    print (viewed_msi)
+    # plt.subplot(141)
+    # plt.imshow(viewed_rgb)
+    # plt.subplot(142)
+    # plt.imshow(viewed_brightImg, 'gray')
+    #
+    # plt.subplot(143)
+    # plt.imshow(viewed_mbi, 'gray')
+    #
+    # plt.subplot(144)
+    # plt.imshow(viewed_msi, 'gray')
+    # plt.show()
 
 
 if __name__ == '__main__':
