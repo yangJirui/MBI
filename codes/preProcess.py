@@ -61,6 +61,7 @@ def white_hat_reconstruction(img, se):
 
     return white_hat
 
+
 def black_hat_reconstruction(img, se):
     # 1. closing by reconstruction
     dilation_img = MM.dilation(img, selem=se)
@@ -74,6 +75,7 @@ def black_hat_reconstruction(img, se):
     black_hat = closing_by_reconstruction - img
 
     return black_hat
+
 
 def get_mbi(img):
 
@@ -100,6 +102,7 @@ def get_mbi(img):
     viewed_mbi = np.asarray(mbi*255.0/np.max(mbi), dtype=np.uint8)
     return mbi, viewed_mbi
 
+
 def get_msi(img):
 
     directions = [0, 45, 90, 135]
@@ -124,6 +127,7 @@ def get_msi(img):
 
     viewed_msi = np.asarray(msi*255.0/np.max(msi), dtype=np.uint8)
     return msi, viewed_msi
+
 
 def vis_some_results():
 
