@@ -2,7 +2,8 @@
 import gdal
 import numpy as np
 import skimage.morphology as MM
-# import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt
+import cv2
 
 from utils import get_liner_se
 
@@ -91,7 +92,7 @@ def get_mbi(img):
         tmp_dmp = np.zeros_like(img, dtype=np.float64)
 
         for s in sizes:
-            if s % 2==0:
+            if s % 2 == 0:
                 s +=1
             now_white_hat = white_hat_reconstruction(img, se=get_liner_se(d, scale=s))
             tmp_dmp += np.abs(old_white_hat - now_white_hat)
@@ -129,7 +130,7 @@ def get_msi(img):
     return msi, viewed_msi
 
 
-def vis_some_results():
+def vis_some_results(save_res=False):
 
     raw_img, viewed_rgb = read_tif('../data/Four_Vegas_img96.tif',
                                    650, 650)
@@ -138,23 +139,32 @@ def vis_some_results():
 
     mbi, viewed_mbi = get_mbi(bright_img)
     msi, viewed_msi = get_msi(bright_img)
-    print (viewed_msi)
-    # plt.subplot(141)
-    # plt.imshow(viewed_rgb)
-    # plt.subplot(142)
-    # plt.imshow(viewed_brightImg, 'gray')
-    #
-    # plt.subplot(143)
-    # plt.imshow(viewed_mbi, 'gray')
-    #
-    # plt.subplot(144)
-    # plt.imshow(viewed_msi, 'gray')
+
+    # print (viewed_msi)
+    plt.subplot(141)
+    plt.imshow(viewed_rgb)
+    plt.subplot(142)
+    plt.imshow(viewed_brightImg, 'gray')
+
+    plt.subplot(143)
+    plt.imshow(viewed_mbi, 'gray')
+
+    plt.subplot(144)
+    plt.imshow(viewed_msi, 'gray')
     # plt.show()
+    if save_res:
+        np.save("../data/res/msi_raw.npy", msi)
+        np.save("../data/res/mbi_raw.npy", mbi)
+        cv2.imwrite('../data/res/msi.png', viewed_msi)
+        cv2.imwrite('../data/res/mbi.png', viewed_mbi)
+        plt.savefig("../data/res/compare.png")
+    else:
+        plt.show()
 
 
 if __name__ == '__main__':
     print(222)
-    vis_some_results()
+    vis_some_results(save_res=True)
 
 
 
