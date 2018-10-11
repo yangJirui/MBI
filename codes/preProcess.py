@@ -2,7 +2,7 @@
 import gdal
 import numpy as np
 import skimage.morphology as MM
-import matplotlib.pyplot as plt
+# import matplotlib.pyplot as plt
 
 from utils import get_liner_se
 
@@ -61,6 +61,7 @@ def white_hat_reconstruction(img, se):
 
     return white_hat
 
+
 def black_hat_reconstruction(img, se):
     # 1. closing by reconstruction
     dilation_img = MM.dilation(img, selem=se)
@@ -74,6 +75,7 @@ def black_hat_reconstruction(img, se):
     black_hat = closing_by_reconstruction - img
 
     return black_hat
+
 
 def get_mbi(img):
 
@@ -100,6 +102,7 @@ def get_mbi(img):
     viewed_mbi = np.asarray(mbi*255.0/np.max(mbi), dtype=np.uint8)
     return mbi, viewed_mbi
 
+
 def get_msi(img):
 
     directions = [0, 45, 90, 135]
@@ -125,6 +128,7 @@ def get_msi(img):
     viewed_msi = np.asarray(msi*255.0/np.max(msi), dtype=np.uint8)
     return msi, viewed_msi
 
+
 def vis_some_results():
 
     raw_img, viewed_rgb = read_tif('../data/Four_Vegas_img96.tif',
@@ -134,17 +138,18 @@ def vis_some_results():
 
     mbi, viewed_mbi = get_mbi(bright_img)
     msi, viewed_msi = get_msi(bright_img)
-    plt.subplot(141)
-    plt.imshow(viewed_rgb)
-    plt.subplot(142)
-    plt.imshow(viewed_brightImg, 'gray')
-
-    plt.subplot(143)
-    plt.imshow(viewed_mbi, 'gray')
-
-    plt.subplot(144)
-    plt.imshow(viewed_msi, 'gray')
-    plt.show()
+    print (viewed_msi)
+    # plt.subplot(141)
+    # plt.imshow(viewed_rgb)
+    # plt.subplot(142)
+    # plt.imshow(viewed_brightImg, 'gray')
+    #
+    # plt.subplot(143)
+    # plt.imshow(viewed_mbi, 'gray')
+    #
+    # plt.subplot(144)
+    # plt.imshow(viewed_msi, 'gray')
+    # plt.show()
 
 
 if __name__ == '__main__':
