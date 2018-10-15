@@ -7,6 +7,7 @@ import cv2
 
 from utils import get_liner_se
 
+
 def read_tif(path, H, W, band_list=[4, 2, 1]):
     '''
     band list is [1~8]. Among them, [2, 3, 5] is [B, G, R]
@@ -130,41 +131,74 @@ def get_msi(img):
     return msi, viewed_msi
 
 
-def vis_some_results(save_res=False):
+def get_NDVI(img):
+    print("the raw_img dtype is {}, now we change it to float32".format(img.dtype))
+    img = np.array(img, dtype=np.float32)
 
-    raw_img, viewed_rgb = read_tif('../data/Four_Vegas_img96.tif',
+    NIR, R = img[-2], img[4]
+
+    NDVI = (NIR - R)/(NIR + R)
+
+    viewed_ndvi = np.array(NDVI * 255.0/np.max(NDVI), dtype=np.uint8)
+    return NDVI, viewed_ndvi
+
+
+def vis_some_results(img_name, save_res=False):
+    raw_img, viewed_rgb = read_tif('../data/%s' % img_name,
                                    650, 650)
-
+    # 1. get brightness img
     bright_img, viewed_brightImg = get_brightness(raw_img, selected_bands=[0, 1, 2, 3, 4])
 
+    # 2. get NDVI
+    NDVI, viewed_ndvi = get_NDVI(raw_img)
+
+    # 3. get mbi and msi
     mbi, viewed_mbi = get_mbi(bright_img)
     msi, viewed_msi = get_msi(bright_img)
 
     # print (viewed_msi)
-    plt.subplot(141)
+    plt.subplot(231)
     plt.imshow(viewed_rgb)
-    plt.subplot(142)
+    plt.title("RGB")
+
+    plt.subplot(232)
     plt.imshow(viewed_brightImg, 'gray')
+    plt.title("brightImg")
 
-    plt.subplot(143)
+    plt.subplot(233)
+    plt.imshow(viewed_ndvi, "gray")
+    plt.title("NDVI")
+
+    plt.subplot(234)
     plt.imshow(viewed_mbi, 'gray')
+    plt.title("MBI")
 
-    plt.subplot(144)
+    plt.subplot(235)
     plt.imshow(viewed_msi, 'gray')
-    # plt.show()
+    plt.title("MSI")
+
     if save_res:
-        np.save("../data/res/msi_raw.npy", msi)
-        np.save("../data/res/mbi_raw.npy", mbi)
-        cv2.imwrite('../data/res/msi.png', viewed_msi)
-        cv2.imwrite('../data/res/mbi.png', viewed_mbi)
-        plt.savefig("../data/res/compare.png")
+        if img_name.endswith((".tif", ".png", ".jpg")):
+            img_name = ".".join(img_name.split(".")[:-1])
+            print("img_name is :: ", img_name)
+        np.save("../data/res/raw_data/%s_brightImg.npy" % img_name, bright_img)
+        np.save("../data/res/raw_data/%s_NDVI.npy" % img_name, NDVI)
+        np.save("../data/res/raw_data/%s_msi.npy" % img_name, msi)
+        np.save("../data/res/raw_data/%s_mbi.npy" % img_name, mbi)
+
+        cv2.imwrite('../data/res/viewed_data/%s_msi.png' % img_name, viewed_msi)
+        cv2.imwrite('../data/res/viewed_data/%s_mbi.png' % img_name, viewed_mbi)
+        cv2.imwrite("../data/res/viewed_data/%s_brightImg.png" % img_name, viewed_brightImg)
+        cv2.imwrite("../data/res/viewed_data/%s_NDVI.png" % img_name, viewed_ndvi)
+        plt.savefig("../data/res/viewed_data/%s_compare.png" % img_name)
     else:
         plt.show()
 
 
 if __name__ == '__main__':
     print(222)
-    vis_some_results(save_res=True)
+    vis_some_results(img_name="Four_Vegas_img96.tif",
+                     save_res=True)
 
 
 
