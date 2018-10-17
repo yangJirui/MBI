@@ -203,6 +203,8 @@ def vis_some_results(img_path, img_name, save_res=False):
     else:
         plt.show()
 
+<<<<<<< HEAD
+=======
 
 def deal_many_files(imglist_path):
 
@@ -227,6 +229,7 @@ def deal_many_files(imglist_path):
 
 
 
+>>>>>>> c1f84ed7d8026d74843f216beba18f6dd50b9458
 if __name__ == '__main__':
     print(222)
     deal_many_files("/home/yjr/DataSet/SpaceNet/AOall_pascal/test_imgs_list.txt")
