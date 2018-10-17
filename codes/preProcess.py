@@ -194,7 +194,6 @@ def vis_some_results(img_name, save_res=False):
     else:
         plt.show()
 
-
 if __name__ == '__main__':
     print(222)
     vis_some_results(img_name="Four_Vegas_img96.tif",
