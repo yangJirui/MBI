@@ -4,7 +4,7 @@ import numpy as np
 import skimage.morphology as MM
 import matplotlib.pyplot as plt
 import cv2
-
+import os
 from utils import get_liner_se
 
 
@@ -21,10 +21,10 @@ def read_tif(path, H, W, band_list=[4, 2, 1]):
     img_obj = gdal.Open(path)
     raw_img = img_obj.ReadAsArray(0, 0, H, W)  # 163 # [C, H, W]
     vis_bands = []
-    print("the raw dtype is :{} ...But change it to float64.".format(raw_img.dtype))
+    # print("the raw dtype is :{} ...But change it to float64.".format(raw_img.dtype))
 
     raw_img = np.asarray(raw_img, dtype=np.float64)
-    print(raw_img.dtype)
+    # print(raw_img.dtype)
 
     for band_id in band_list:
         tmp_band = raw_img[band_id]
@@ -88,7 +88,7 @@ def get_mbi(img):
 
     for d in directions:
         now_se = get_liner_se(d, scale=57)
-        print (now_se)
+        # print (now_se)
         old_white_hat = white_hat_reconstruction(img, se=now_se)
         tmp_dmp = np.zeros_like(img, dtype=np.float64)
 
@@ -114,7 +114,7 @@ def get_msi(img):
 
     for d in directions:
         now_se = get_liner_se(d, scale=57)
-        print (now_se)
+        # print (now_se)
         old_black_hat = black_hat_reconstruction(img, se=now_se)
         tmp_dmp = np.zeros_like(img, dtype=np.float64)
 
@@ -132,19 +132,28 @@ def get_msi(img):
 
 
 def get_NDVI(img):
-    print("the raw_img dtype is {}, now we change it to float32".format(img.dtype))
+    # print("the raw_img dtype is {}, now we change it to float32".format(img.dtype))
     img = np.array(img, dtype=np.float32)
 
     NIR, R = img[-2], img[4]
 
-    NDVI = (NIR - R)/(NIR + R)
+    NDVI = (NIR - R)/(NIR + R + 1e-8)
 
     viewed_ndvi = np.array(NDVI * 255.0/np.max(NDVI), dtype=np.uint8)
     return NDVI, viewed_ndvi
 
 
-def vis_some_results(img_name, save_res=False):
-    raw_img, viewed_rgb = read_tif('../data/%s' % img_name,
+def save_NDVI(img_path, img_name):
+    raw_img, viewed_rgb = read_tif(img_path,
+                                   650, 650)
+
+    NDVI, viewed_ndvi = get_NDVI(raw_img)
+    np.save("../data/res/raw_data/%s_NDVI.npy" % img_name, NDVI)
+    cv2.imwrite("../data/res/viewed_data/%s_NDVI.png" % img_name, viewed_ndvi)
+
+
+def vis_some_results(img_path, img_name, save_res=False):
+    raw_img, viewed_rgb = read_tif(img_path,
                                    650, 650)
     # 1. get brightness img
     bright_img, viewed_brightImg = get_brightness(raw_img, selected_bands=[0, 1, 2, 3, 4])
@@ -195,10 +204,35 @@ def vis_some_results(img_name, save_res=False):
         plt.show()
 
 
+def deal_many_files(imglist_path):
+
+    ROOT_PATH  = "/home/yjr/DataSet/SpaceNet"
+    def get_name(all_name):
+        name = all_name.strip().split("PanSharpen_")[1].split(".jpg")[0]
+        root_name = name.split("_img")[0]
+
+        return root_name, name
+    with open(imglist_path) as f:
+        img_list = f.readlines()
+
+    for i, a_name in enumerate(img_list):
+        dataset_name, name = get_name(a_name)
+        img_path = os.path.join(ROOT_PATH, dataset_name+"_Train", "MUL-PanSharpen",
+                                "MUL-PanSharpen_%s.tif" % name)
+        # vis_some_results(img_path, img_name=name, save_res=True)
+        save_NDVI(img_path, name)
+        print (i)
+
+
+
+
+
 if __name__ == '__main__':
     print(222)
-    vis_some_results(img_name="Four_Vegas_img96.tif",
-                     save_res=True)
+    deal_many_files("/home/yjr/DataSet/SpaceNet/AOall_pascal/test_imgs_list.txt")
+    # vis_some_results(img_path='/home/yjr/DataSet/SpaceNet/AOI_2_Vegas_Train/MUL-PanSharpen/MUL-PanSharpen_AOI_2_Vegas_img576.tif',
+    #                  img_name="test.tif",
+    #                  save_res=True)
 
 
 

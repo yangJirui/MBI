@@ -6,9 +6,9 @@ from utils import get_img_objects
 from geometric_utils import get_minRect
 from geometric_utils import distance_of_two_rect
 
-TS = 30
-TB_HIGH = 70
-TB_LOW = 35
+TS = 0.5  # 30
+TB_HIGH = 2 # 70
+TB_LOW = 0.5  # 35
 D_HIGH = 20
 D_LOW = 10
 
@@ -24,6 +24,27 @@ def get_shadows(bright_img, msi, NDVI):
                (NDVI <= ndvi_threshold)] = 255
     object_lists = get_img_objects(binary_res, binary_res)
     return object_lists
+
+
+def filter_mbi(mbi_object_list, shadow_objects):
+
+    building_objects = {"high_mbi": [],
+                        "low_mbi": []}
+    for a_object in mbi_object_list:
+        mean, object_pixels = a_object
+        if mean > TB_LOW:
+            object_rect = get_minRect(object_pixels)
+            min_dist = 10000
+            for a_shadow in shadow_objects:
+                _, shadow_pixels = a_shadow
+                shadow_rect = get_minRect(shadow_pixels)
+                min_dist = min(min_dist, distance_of_two_rect(shadow_rect, object_rect))
+
+            if mean > TB_HIGH and min_dist < D_HIGH:
+                building_objects["high_mbi"].append(object_pixels)
+            elif min_dist < D_LOW:
+                building_objects["low_mbi"].append(object_pixels)
+    return building_objects, shadow_objects
 
 
 def test_getShadows(img_name):
@@ -51,38 +72,6 @@ def test_getShadows(img_name):
         cv2.drawContours(color_mask, [a_box], -1, (255, 0, 0), 2)
     plt.imshow(color_mask)
     plt.show()
-
-
-def filter_mbi(img_name):
-    if img_name.endswith((".tif", ".png", ".jpg")):
-        img_name = ".".join(img_name.split(".")[:-1])
-        print("img_name is :: ", img_name)
-    bright_img = np.load("../data/res/raw_data/%s_brightImg.npy" % img_name)
-    msi = np.load("../data/res/raw_data/%s_msi.npy" % img_name)
-    NDVI = np.load('../data/res/raw_data/%s_NDVI.npy' % img_name)
-    mbi = np.load("../data/res/raw_data/%s_mbi.npy" % img_name)
-    seg_res = cv2.imread("../data/res/export/%s_SegRes.png" % img_name)
-
-    mbi_object_list = get_img_objects(seg_res, mbi, is_binary=False)
-    building_objects = {"high_mbi": [],
-                        "low_mbi": []}
-    shadow_objects = get_shadows(bright_img, msi=msi, NDVI=NDVI)
-
-    for a_object in mbi_object_list:
-        mean, object_pixels = a_object
-        if mean > TB_LOW:
-            object_rect = get_minRect(object_pixels)
-            min_dist = 10000
-            for a_shadow in shadow_objects:
-                _, shadow_pixels = a_shadow
-                shadow_rect = get_minRect(shadow_pixels)
-                min_dist = min(min_dist, distance_of_two_rect(shadow_rect, object_rect))
-
-            if mean > TB_HIGH and min_dist < D_HIGH:
-                building_objects["high_mbi"].append(object_pixels)
-            elif min_dist < D_LOW:
-                building_objects["low_mbi"].append(object_pixels)
-    return building_objects, shadow_objects
 
 
 def test_filter_mbi(img_name):
