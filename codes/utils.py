@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import numpy as np
 import copy
 
@@ -91,7 +92,8 @@ def get_img_objects(raw_mask, raw_img, filter_pixels=50, is_binary=True):
         scaned_val = -1
         old_seed_val = -1
         if len(raw_mask.shape) > 1:
-            raw_mask = raw_mask[:, :, 0]
+            raw_mask = np.mean(raw_mask*1.0, axis=-1)
+
         mask = np.array(raw_mask, dtype=np.int32)
         for row in range(rows):
             for column in range(columns):

@@ -5,7 +5,7 @@ import numpy as np
 
 import matplotlib.pyplot as plt
 
-def get_minRect(object_container):
+def get_minRect(object_container, return_type="points"):
     '''
     :param object_container:  a list contains all the points
     :return:
@@ -23,7 +23,10 @@ def get_minRect(object_container):
 
     box = cv2.boxPoints(rect)
     box = np.int0(box)
-    return box
+    if return_type=="points":
+        return box
+    else:
+        return rect
 
 
 def check_cross(a, b, c, d):
